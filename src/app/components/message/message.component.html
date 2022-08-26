@@ -1,10 +1,5 @@
-<div class="block">TOKEN</div>
 <div>
-    {{token}}
-</div>
-
-<div *ngIf="token">
-    <div class="block">MESSAGE</div>
+    <button mat-raised-button (click)="getMessage()">SEND API</button>
     <div>
         {{message}}
     </div>

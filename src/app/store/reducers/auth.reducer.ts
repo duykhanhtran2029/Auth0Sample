@@ -11,7 +11,7 @@ const reducer = createReducer(
     initialState,
     on(writeAuthenticateStatus, (state, { payload }) => ({ ...state, isAuthenticated: payload })),
     on(setToken, (state, { payload }) => {
-        console.log('[Reducer] - Setting Token', payload);
+        console.log('[Reducer]', payload.substr(-5), new Date().toISOString());
         return ({ ...state, token: payload });
     })
 );

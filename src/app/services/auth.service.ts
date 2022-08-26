@@ -5,7 +5,7 @@ import createAuth0Client from '@auth0/auth0-spa-js';
 import Auth0Client from '@auth0/auth0-spa-js/dist/typings/Auth0Client';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject, combineLatest, from, Observable, of, throwError } from 'rxjs';
-import { catchError, concatMap, shareReplay, tap } from 'rxjs/operators';
+import { catchError, concatMap, retry, shareReplay, tap } from 'rxjs/operators';
 import { setToken, writeAuthenticateStatus } from '../store/actions/auth.actions';
 
 @Injectable({
@@ -17,6 +17,7 @@ export class AuthService {
     isAuthenticated$: Observable<boolean>;
     handleRedirectCallback$: Observable<any>;
     getToken$: Observable<any>;
+    getTokenWithRefreshToken$: Observable<any>;
     private handleCallbackCompleteSubject$ = new BehaviorSubject<boolean>(false);
     // eslint-disable-next-line @typescript-eslint/member-ordering
     handleCallbackComplete$ = this.handleCallbackCompleteSubject$.asObservable();
@@ -67,14 +68,22 @@ export class AuthService {
 
         this.getToken$ = this.auth0Client$.pipe(
             concatMap((client: Auth0Client) => from(client.getTokenSilently())),
-            tap((token: string) => {
-                this.store.dispatch(setToken({ payload: token }));
-                const decode = JSON.parse(window.atob(token.split('.')[1]));
-                console.log(decode);
-            },
-            (error) => console.log('[Error]',error)
-            )
+            tap({
+                next: (token: string) => {
+                    this.store.dispatch(setToken({ payload: token }));
+                    this.tokenRecursive(this.getToken$, token);
+                },
+                error: (err) => {
+                    console.log("retry");
+                }
+            }),
+            retry(1)
         );
+    }
+
+    tokenRecursive(getToken: Observable<any> ,token: string) {
+        const expiredAt: number = JSON.parse(window.atob(token.split('.')[1])).exp;
+        setTimeout(() => getToken.subscribe(), expiredAt * 1000 - Date.now() - 1000);
     }
 
     login(redirectPath: string = '/') {
@@ -88,7 +97,7 @@ export class AuthService {
             client.loginWithRedirect({
                 redirect_uri: `${window.location.origin}`,
                 appState: { target: redirectPath }
-            });
+            }).then(token => console.log(token));
         });
     }
 

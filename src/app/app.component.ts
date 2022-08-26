@@ -11,27 +11,14 @@ import { selectIsAuthenticated } from './store/selectors/auth.selector';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   time = 0;
   enable = true;
   constructor(
-    private store: Store<AuthState>,
-    private authService: AuthService) {}
-  ngOnInit(): void {
-    interval(1000)
-      .pipe(
-        tap(tick => this.time = tick),
-        // check nearly expired
-        filter(tick => this.enable && tick % 19 === 0),
-        switchMap(() => this.authService.getToken$))
-      .subscribe(() => {
-        console.log('[Timer] - Get access token silently');
-      });
-
-      //TODO: track by expired time of access token ?
-  }
+    private store: Store<AuthState>) {}
 
   onLogout() {
     this.store.dispatch(authSignOut());
   }
+
 }
