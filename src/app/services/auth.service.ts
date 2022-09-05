@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthState } from '@auth0/auth0-angular';
-import createAuth0Client from '@auth0/auth0-spa-js';
-import Auth0Client from '@auth0/auth0-spa-js/dist/typings/Auth0Client';
+import createAuth0Client, { Auth0Client } from '@auth0/auth0-spa-js';
 import { Store } from '@ngrx/store';
 import { BehaviorSubject, combineLatest, from, Observable, of, throwError } from 'rxjs';
 import { catchError, concatMap, retry, shareReplay, tap } from 'rxjs/operators';
 import { setToken, writeAuthenticateStatus } from '../store/actions/auth.actions';
+import { AuthState } from '../store/state/auth.state';
 
 @Injectable({
     providedIn: 'root'
@@ -44,9 +43,8 @@ export class AuthService {
                 domain: 'dev-sample.eu.auth0.com',
                 client_id: '7Vho6oFU3XguYTyEplZSk55i50DytXbj',
                 redirect_uri: `${window.location.origin}`,
-                response_type: 'code',
                 useRefreshTokens: true,
-                cacheLocation: 'localstorage'
+                scope: 'openid profile email offline_access'
             })
         ) as Observable<Auth0Client>).pipe(
             shareReplay(1), // Every subscription receives the same shared value

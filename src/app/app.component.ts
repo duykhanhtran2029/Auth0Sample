@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthState } from '@auth0/auth0-angular';
 import { Store } from '@ngrx/store';
 import { filter, interval, switchMap, tap } from 'rxjs';
 import { AuthService } from './services/auth.service';
 import { authSignOut } from './store/actions/auth.actions';
 import { selectIsAuthenticated } from './store/selectors/auth.selector';
+import { AuthState } from './store/state/auth.state';
 
 @Component({
   selector: 'app-root',
